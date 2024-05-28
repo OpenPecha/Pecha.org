@@ -188,7 +188,7 @@ SEFARIA_DB_PASSWORD = ''
 APSCHEDULER_NAME = "apscheduler"
 
 # ElasticSearch server
-SEARCH_ADMIN = "http://localhost:9200"
+SEARCH_URL = "https://elastic:E1XH1XBiP9izLcF7OFqOLMQu@be6334e7a58142d286a4b2acd66653b1.asia-south1.gcp.elastic-cloud.com:443"
 # Whether to send texts and source sheet to Search Host for indexing after save
 SEARCH_INDEX_ON_SAVE = False
 SEARCH_INDEX_NAME_TEXT = 'text'  # name of the ElasticSearch index to use
