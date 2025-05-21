@@ -538,19 +538,18 @@ const MobileNavMenu = ({onRefClick, showSearch, openTopic, openURL, close, visib
         <img src="/static/icons/book.svg" />
         <InterfaceText >header.text</InterfaceText>
       </a>
-      <a href="/topics" onClick={close}>
+      <a href="/plans" onClick={close}>
         <img src="/static/icons/topic.svg" />
-        <InterfaceText>header.topic</InterfaceText>
+        <InterfaceText>header.plans</InterfaceText>
       </a>
       <a href="/community" onClick={close}>
         <img src="/static/icons/community.svg" />
         <InterfaceText>header.community</InterfaceText>
       </a>
-      {/* Add Plans link here */}
-      <a href="/plans" onClick={close}>
-        <img src="/static/icons/community.svg" />
-        <InterfaceText>header.plans</InterfaceText>
-      </a>
+      {/* <a href="/topics" onClick={close}>
+        <img src="/static/icons/topic.svg" />
+        <InterfaceText>header.topic</InterfaceText>
+      </a> */}
       {/* <a href="/calendars" onClick={close}>
         <img src="/static/icons/calendar.svg" />
         <InterfaceText>Learning Schedules</InterfaceText>
