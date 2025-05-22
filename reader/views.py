@@ -4457,6 +4457,8 @@ def day_plan_detail_page(request, plan_id, props={}):
     plan = get_plan_for_panel(plan_id)
 
     user_id = request.user.id
+    user_email = request.user.email
+    print("user email>>>>>>>>>>>>>>>>>>>>>>>>>>>", user_email)
 
     # Check if user already has this plan
     existing_plan = UserPlanSet().get_user_plan(user_id, plan_id)
@@ -4468,7 +4470,7 @@ def day_plan_detail_page(request, plan_id, props={}):
     else:
         # Start new plan only if it doesn't exist
         try:
-            new_plan = UserPlan().start_plan(user_id=user_id, plan_id=plan_id)
+            new_plan = UserPlan().start_plan(user_id=user_id,user_email=user_email, plan_id=plan_id)
             user_plan_id = new_plan.save()
         except InputError as e:
             return jsonResponse({"error": str(e)}, status=400)
