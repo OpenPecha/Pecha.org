@@ -23,6 +23,7 @@ class UserPlan:
         """
         self._id = None
         self.user_id = None  # Reference to user
+        self.user_email = None
         self.plan_id = None  # Reference to Plan
         self.started_at = datetime.now()
         self.current_day = 1  # The day the user is currently on
@@ -47,7 +48,7 @@ class UserPlan:
         }
         self.settings = {
             "notification_enabled": True,
-            "reminder_time": "07:00",
+            "reminder_time": "11:00",
             "locale": "en"
             # "timezone": "UTC" need to check whether need it or not
         }
@@ -96,7 +97,7 @@ class UserPlan:
         if not plan:
             raise InputError(f"Plan with ID {self.plan_id} does not exist")
     
-    def start_plan(self, user_id, plan_id):
+    def start_plan(self, user_id, user_email, plan_id):
         """
         Start a new plan for a user
         :param user_id: The ID of the user
@@ -104,6 +105,7 @@ class UserPlan:
         :return: self
         """
         self.user_id = user_id
+        self.user_email = user_email
         self.plan_id = plan_id
         self.started_at = datetime.now()
         self.current_day = 1
@@ -225,6 +227,7 @@ class UserPlan:
         return {
             "_id": ObjectId(self._id) if self._id else None,
             "user_id": self.user_id,
+            "user_email": self.user_email,
             "plan_id": self.plan_id,
             "started_at": self.safe_isoformat(self.started_at),
             "current_day": self.current_day,
