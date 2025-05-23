@@ -79,14 +79,13 @@ const Plans = ({ userType }) => {
   const getCurrentPlans = () => {
     switch (activeTab) {
       case 'my':
-        return userPlans;
+        return [...userPlans].reverse();
       case 'completed':
-        return completedPlans;
+        return [...completedPlans].reverse();
       case 'all':
       default:
-        return plans;
+        return [...plans].reverse();
     }
-    
   };
 
   // Filter plans based on search query and category
