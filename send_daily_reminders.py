@@ -35,7 +35,6 @@ SMTP_USER = os.getenv("SMTP_USER")
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
 SENDER_EMAIL = os.getenv("SENDER_EMAIL")
 
-print(SMTP_SERVER, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SENDER_EMAIL)
 
 def get_plan_title(plan_id):
     """Get plan title from plans collection using plan_id"""
