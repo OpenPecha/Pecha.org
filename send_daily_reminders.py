@@ -35,6 +35,8 @@ SMTP_USER = os.getenv("SMTP_USER")
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
 SENDER_EMAIL = os.getenv("SENDER_EMAIL")
 
+print(SMTP_SERVER, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SENDER_EMAIL)
+
 def get_plan_title(plan_id):
     """Get plan title from plans collection using plan_id"""
     try:
@@ -59,10 +61,16 @@ def send_reminder_email(user_plan):
             
         plan_title = get_plan_title(plan_id)
         
+        # Get user email from user_plan
+        user_email = user_plan.get('user_email')
+        if not user_email:
+            logger.error(f"No user_email found in user_plan: {user_plan}")
+            return
+        
         # Create message
         msg = MIMEMultipart()
         msg['From'] = SENDER_EMAIL
-        msg['To'] = "tiboyz9825@gmail.com"
+        msg['To'] = user_email
         msg['Subject'] = "Your Daily Pecha Plan Reminder"
         
         # Calculate progress
@@ -92,10 +100,10 @@ def send_reminder_email(user_plan):
         server.starttls()
         server.login(SMTP_USER, SMTP_PASSWORD)
         text = msg.as_string()
-        server.sendmail(SENDER_EMAIL, "tiboyz9825@gmail.com", text)
+        server.sendmail(SENDER_EMAIL, user_email, text)
         server.quit()
         
-        logger.info(f"Reminder sent successfully to tiboyz9825@gmail.com for plan {plan_title}")
+        logger.info(f"Reminder sent successfully to {user_email} for plan {plan_title}")
     except Exception as e:
         logger.error(f"Error sending reminder: {e}")
         logger.error(f"SMTP Settings: Server={SMTP_SERVER}, Port={SMTP_PORT}, User={SMTP_USER}")
