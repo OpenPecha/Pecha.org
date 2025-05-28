@@ -27,6 +27,9 @@ RUN npm install --unsafe-perm
 # Check the installed version of Pillow after installing requirements
 RUN python -m pip show Pillow
 
+# Create the log file for reminders
+RUN touch /app/reminder_logs.log && chmod 666 /app/reminder_logs.log
+
 # Add a diagnostic command to check libraqm and Pillow support
 RUN echo "Checking libraqm and Pillow support..." && \
     dpkg -l | grep libraqm || echo "libraqm not installed" && \
@@ -38,14 +41,13 @@ COPY ./static/js ./static/js
 RUN npm run setup
 RUN npm run build-prod
 
-
 # Copy application source code
 COPY . ./
 
 RUN python manage.py collectstatic --noinput
 
-# Run Django migrations and start the server
-CMD ["bash", "-c", "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"]
+# Run Django migrations and start both the main app and reminder script
+CMD ["bash", "-c", "python send_daily_reminders.py & python manage.py migrate && python manage.py runserver 0.0.0.0:8000"]
 
 # Expose the port for the Django application
 EXPOSE 8000
