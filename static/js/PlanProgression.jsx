@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Sheet from './Sheet';
+import { InterfaceText } from './Misc';
 
 const PlanProgression = ({planId, planData, userPlanId, onCitationClick}) => {
   const [currentDay, setCurrentDay] = useState(1);
@@ -17,9 +18,8 @@ const PlanProgression = ({planId, planData, userPlanId, onCitationClick}) => {
   }, [currentDay]);
 
   useEffect(() => {
-    // Fetch sheet data when plan data is loaded or current day changes
     if (planData) {
-      getUserPlan()
+      getUserPlan();
     }
   }, [userPlanId]);
 
@@ -29,9 +29,7 @@ const PlanProgression = ({planId, planData, userPlanId, onCitationClick}) => {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const data = await response.json();
-
-    setUserPlan(data.plans[0]);
-    setCurrentDay(data.plans[0].current_day);
+    setUserPlan(data.plans);
   };
   
   const fetchDayContent = async (day) => {
@@ -96,8 +94,13 @@ const PlanProgression = ({planId, planData, userPlanId, onCitationClick}) => {
       const data = await response.json();
 
       // Update the UI - move to the next day if not at the end
-      if (currentDay < planData.total_days) {
-        setCurrentDay(currentDay + 1);
+      if (userPlan.completed_days.length < planData.total_days) {
+        getUserPlan();
+        if (currentDay < planData.total_days) {
+          setCurrentDay(currentDay + 1);
+        } else {
+          setCurrentDay(1);
+        }
       } else {
         alert('You have completed all days of the plan.');
           window.location.href = '/plans';
@@ -185,7 +188,9 @@ const PlanProgression = ({planId, planData, userPlanId, onCitationClick}) => {
         {/* Sheet Content */}
         <div className={`sheet-content`}> 
           {isLoading ? (
-            <div>Loading day content...</div>
+            <div className="loading" style={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', width: '100%'}}>
+              <InterfaceText>common.loading</InterfaceText>
+            </div>
           ) : sheetData ? (
               <Sheet
                 id={planData.content[`day ${currentDay}`]?.sheet_id}

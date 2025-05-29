@@ -22,7 +22,7 @@ const Plans = ({ userType }) => {
   const [activeTab, setActiveTab] = useState('all'); // 'all', 'my', 'completed'
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [pageSize] = useState(10); // Number of plans per page
+  const [pageSize] = useState(2); // Number of plans per page
 
   // Fetch plans from API
   useEffect(() => {
