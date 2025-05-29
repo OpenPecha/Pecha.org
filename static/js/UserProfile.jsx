@@ -25,11 +25,64 @@ const EditPlanModal = ({ plan, onClose, onSave }) => {
     whatYouWillLearn: plan?.whatYouWillLearn || '',
     categories: plan?.categories || [],
     totalDays: plan?.totalDays || '',  
-    planImage: plan?.planImage || ''
+    planImage: plan?.planImage || '',
+    content: plan?.content || {}
   });
   const [isUploading, setIsUploading] = useState(false);
   const [categoryInput, setCategoryInput] = useState('');
   const [suggestedCategories, setSuggestedCategories] = useState([]);
+  const [showSheetMapping, setShowSheetMapping] = useState(false);
+  const [sheetInputs, setSheetInputs] = useState([{ link: '', day: '' }]);
+
+  const getSheetIdFromUrl = (url) => {
+    try {
+      const match = url.match(/sheets\/(\d+)/);
+      return match ? match[1] : null;
+    } catch (error) {
+      console.error('Error extracting sheet ID:', error);
+      return null;
+    }
+  };
+
+  const handleSheetLinkChange = (index, value) => {
+    const updatedInputs = [...sheetInputs];
+    updatedInputs[index] = { ...updatedInputs[index], link: value };
+    
+    if (index === updatedInputs.length - 1 && value.trim() !== '') {
+      if (updatedInputs.length < formData.totalDays) {
+        updatedInputs.push({ link: '', day: '' });
+      }
+    }
+    
+    setSheetInputs(updatedInputs);
+  };
+
+  const handleDaySelect = (index, value) => {
+    const updatedInputs = [...sheetInputs];
+    updatedInputs[index] = { ...updatedInputs[index], day: value };
+    
+    const sheetId = getSheetIdFromUrl(updatedInputs[index].link);
+    if (sheetId) {
+      const updatedContent = { ...formData.content };
+      updatedContent[value] = parseInt(sheetId);
+      setFormData(prev => ({ 
+        ...prev,
+        content: updatedContent
+      }));
+    }
+    
+    setSheetInputs(updatedInputs);
+  };
+
+  const getAvailableDays = (currentIndex) => {
+    const selectedDays = sheetInputs
+      .filter((input, idx) => idx !== currentIndex && input.day)
+      .map(input => input.day);
+    
+    return [...Array(parseInt(formData.totalDays))]
+      .map((_, i) => `day ${i + 1}`)
+      .filter(day => !selectedDays.includes(day));
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -215,6 +268,44 @@ const EditPlanModal = ({ plan, onClose, onSave }) => {
               required
             />
           </div>
+          <div className="form-group">
+            <button
+              type="button"
+              className="button small"
+              onClick={() => setShowSheetMapping(!showSheetMapping)}
+            >
+              Click here if you want to reassign sheets to days?
+            </button>
+          </div>
+          {showSheetMapping && (
+            <div className="sheet-mapping-section">
+              {sheetInputs.map((input, index) => (
+                <div key={index} className="sheet-mapping-row">
+                  <div className="form-group">
+                    <label>Sheet URL:</label>
+                    <input
+                      type="text"
+                      value={input.link}
+                      onChange={(e) => handleSheetLinkChange(index, e.target.value)}
+                      placeholder="Enter sheet URL"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Assign to Day:</label>
+                    <select
+                      value={input.day}
+                      onChange={(e) => handleDaySelect(index, e.target.value)}
+                    >
+                      <option value="">Select a day</option>
+                      {getAvailableDays(index).map(day => (
+                        <option key={day} value={day}>{day}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
           <div className="form-group">
             <label>Plan Image:</label>
             <div className="image-upload-container">
