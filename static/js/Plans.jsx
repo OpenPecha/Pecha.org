@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import { InterfaceText } from './Misc';
+import { InterfaceText, Pagination } from './Misc';
 import PlanDetail from './PlanDetail';
 import PlanProgression from './PlanProgression';
 
@@ -20,23 +20,38 @@ const Plans = ({ userType }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('all'); // 'all', 'my', 'completed'
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [pageSize] = useState(2); // Number of plans per page
 
   // Fetch plans from API
   useEffect(() => {
-    fetchAllPlans();
+    fetchAllPlans(currentPage);
     fetchUserPlans();
     // fetchCompletedPlans();
-  }, []);
+  }, [currentPage]);
+  
+  // Handle page change
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+    window.scrollTo(0, 0); // Scroll to top when changing pages
+  };
 
-  const fetchAllPlans = async () => {
+  const fetchAllPlans = async (page = 1) => {
     try {
       setLoading(true);
-      const response = await fetch('/api/plans');
+      const response = await fetch(`/api/plans?page=${page}&page_size=${pageSize}`);
       if (!response.ok) {
         throw new Error('Failed to fetch plans');
       }
       const data = await response.json();
       setPlans(data.plans);
+      
+      // Set pagination data if available
+      if (data.pagination) {
+        setCurrentPage(data.pagination.page);
+        setTotalPages(data.pagination.total_pages);
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -105,7 +120,9 @@ const Plans = ({ userType }) => {
   };
 
   if (loading && activeTab === 'all') {
-    return <div className="loading">Loading plans...</div>;
+    return (<div className="loading" style={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', width: '100%'}}>
+                      <InterfaceText>common.loading</InterfaceText>
+                    </div>);;
   }
 
   if (error && activeTab === 'all') {
@@ -190,6 +207,17 @@ const Plans = ({ userType }) => {
                     {activeTab === 'all' && <AllPlans filteredPlans={filteredPlans} />}
                     {activeTab === 'my' && <MyPlans filteredPlans={filteredPlans} onBrowseClick={() => handleTabChange('all')} />}
                     {activeTab === 'completed' && <CompletedPlans filteredPlans={filteredPlans} onBrowseClick={() => handleTabChange('all')} />}
+                    
+                    {/* Pagination - only show for 'all' tab when there are multiple pages */}
+                    {activeTab === 'all' && totalPages > 1 && (
+                      <div className="plans-pagination-container">
+                        <Pagination 
+                          currentPage={currentPage} 
+                          totalPages={totalPages} 
+                          onPageChange={handlePageChange} 
+                        />
+                      </div>
+                    )}
                   </div>
           </div>
         </div>
@@ -200,52 +228,46 @@ const Plans = ({ userType }) => {
 
 
 const AllPlans = ({filteredPlans}) => {
+  const getAllPlans = filteredPlans.map(plan => (
+    <a href={`/plans/${plan.id}`} key={plan.id} className="planCard">
+      <div className="planImageWrapper">
+        <img src={plan.imageUrl || "/static/img/plan-default.png"} alt={plan.title} className="planImage" />
+        <div className="planCategories">
+          {plan.categories.map((category, index) => (
+            <span key={index} className="planCategory">
+              <InterfaceText>{category.charAt(0).toUpperCase() + category.slice(1)}</InterfaceText>
+              {index < plan.categories.length - 1 && <span className="categorySeparator"> • </span>}
+            </span>
+          ))}
+          <span className="categoryCount">+{plan.categories.length - 2 > 0 ? plan.categories.length - 2 : 1}</span>
+        </div>
+      </div>
+      <h3 className="planTitle">
+        <InterfaceText>{plan.title}</InterfaceText>
+      </h3>
+      <div className="planFooter">
+        <span className="planDuration">{plan.total_days} days</span>
+        <div to={`/${plan.id}`} className="readMoreLink">Read more</div>
+      </div>
+    </a>
+  ))
+
   return (
-    <><div className="plansListHeader">
-      <InterfaceText>All Plans</InterfaceText>
-    </div><div className="plansList">
+    <>
         {filteredPlans.length > 0 ? (
-          filteredPlans.map(plan => (
-            <a href={`/plans/${plan.id}`} key={plan.id} className="planCard">
-              <div className="planImageWrapper">
-                <img src={plan.imageUrl || "/static/img/plan-default.png"} alt={plan.title} className="planImage" />
-                <div className="planCategories">
-                  {plan.categories.map((category, index) => (
-                    <span key={index} className="planCategory">
-                      <InterfaceText>{category.charAt(0).toUpperCase() + category.slice(1)}</InterfaceText>
-                      {index < plan.categories.length - 1 && <span className="categorySeparator"> • </span>}
-                    </span>
-                  ))}
-                  <span className="categoryCount">+{plan.categories.length - 2 > 0 ? plan.categories.length - 2 : 1}</span>
-                </div>
-              </div>
-              <h3 className="planTitle">
-                <InterfaceText>{plan.title}</InterfaceText>
-              </h3>
-              <div className="planFooter">
-                <span className="planDuration">{plan.total_days} days</span>
-                <div to={`/${plan.id}`} className="readMoreLink">Read more</div>
-              </div>
-            </a>
-          ))
+          <div className="plansList">
+            {getAllPlans}
+          </div>
         ) : (
-          <p className="noPlansMessage">
-            <InterfaceText>You haven't joined any plans yet.</InterfaceText>
-          </p>
+          <div className="emptyPlansMessage">
+            <p><InterfaceText>There are no plans available</InterfaceText></p>
+          </div>
         )}
-      </div></>
+    </>
   );
 };
 
 const MyPlans = ({ filteredPlans, onBrowseClick }) => {
-  // Helper function to convert numbers to Tibetan numerals
-  const toTibetanNumeral = (num) => {
-    if (num === undefined || num === null) return '';
-    const tibetanNumerals = ['༠', '༡', '༢', '༣', '༤', '༥', '༦', '༧', '༨', '༩'];
-    return num.toString().split('').map(digit => {
-      return tibetanNumerals[parseInt(digit)] || digit;
-    }).join('');
-  };
 
   // Format date to a more readable format
   const formatDate = (dateString) => {
@@ -261,10 +283,13 @@ const MyPlans = ({ filteredPlans, onBrowseClick }) => {
     return (
       <div className="emptyPlansMessage">
         <p><InterfaceText>Browse all plans and start one today!</InterfaceText></p>
-        <button onClick={onBrowseClick} className="browsePlansButton"><InterfaceText>Browse Plans</InterfaceText></button>      </div>
+        <button onClick={onBrowseClick} className="browsePlansButton"><InterfaceText>Browse Plans</InterfaceText></button>      
+      </div>
     );
   }
-
+  const computePercentage = (percentage) => {
+    return Math.floor(percentage);
+  };
   return (
     <div className="myPlansContainer">
       <div className="plansGrid">
@@ -291,21 +316,15 @@ const MyPlans = ({ filteredPlans, onBrowseClick }) => {
                 <div className="progressBarContainer">
                   <div 
                     className="progressBar" 
-                    style={{ width: `${plan.progress.completion_percentage}%` }}
+                    style={{ width: `${computePercentage(plan.progress.completion_percentage)}%` }}
                   ></div>
                 </div>
                 
                 <div className="progressStats">
-                  <div className="progressStat">
-                    <span className="progressLabel"><InterfaceText>Current Day</InterfaceText></span>
-                    <span className="progressValue">
-                      {plan.current_day}/{plan.progress.total_days}
-                    </span>
-                  </div>
                   
                   <div className="progressStat">
                     <span className="progressLabel"><InterfaceText>Completion</InterfaceText></span>
-                    <span className="progressValue">{plan.progress.completion_percentage}%</span>
+                    <span className="progressValue">{computePercentage(plan.progress.completion_percentage)}%</span>
                   </div>
                   
                   <div className="progressStat">
@@ -357,7 +376,7 @@ const CompletedPlans = ({ filteredPlans, onBrowseClick }) => {
 
   return (
     <div className="myPlansContainer">
-      <div className="plansGrid">
+      <div className="plansGrid"> 
         {filteredPlans.map(plan => (
           <div key={plan.id} className="planCard">
             <a href={`/plans/${plan.plan_id}/progress`} className="planCardLink">

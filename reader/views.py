@@ -992,7 +992,7 @@ def texts_category_list(request, cats):
             tocObject, "heShortDesc", '')
         catDefaultDesc = "Read %(categories)s texts online with commentaries and connections." % {
             'categories': cat_string}
-        title = cat_string + " | Sefaria"
+        title = cat_string + " | Pecha"
         desc = catDesc if len(catDesc) else catShortDesc if len(catShortDesc) else catDefaultDesc
 
     props = {
@@ -4457,8 +4457,6 @@ def day_plan_detail_page(request, plan_id, props={}):
     plan = get_plan_for_panel(plan_id)
 
     user_id = request.user.id
-    user_email = request.user.email
-    print("user email>>>>>>>>>>>>>>>>>>>>>>>>>>>", user_email)
 
     # Check if user already has this plan
     existing_plan = UserPlanSet().get_user_plan(user_id, plan_id)
@@ -4470,7 +4468,7 @@ def day_plan_detail_page(request, plan_id, props={}):
     else:
         # Start new plan only if it doesn't exist
         try:
-            new_plan = UserPlan().start_plan(user_id=user_id,user_email=user_email, plan_id=plan_id)
+            new_plan = UserPlan().start_plan(user_id=user_id, plan_id=plan_id)
             user_plan_id = new_plan.save()
         except InputError as e:
             return jsonResponse({"error": str(e)}, status=400)
@@ -5568,12 +5566,11 @@ def user_plans_api(request, plan_id=None, action=None):
     user_id = request.user.id
     
     if request.method == "GET":
-        plan_id = request.GET.get("plan_id", None)
         cb = request.GET.get("callback", None)
         
         if plan_id:
             # Get a specific plan's details and progress
-            user_plan = UserPlanSet().get_user_plan(user_id, plan_id)
+            user_plan = UserPlanSet().get_user_plan_by_id(plan_id)
             if not user_plan:
                 return jsonResponse({"error": f"Plan with ID {plan_id} not found for user"}, status=404, callback=cb)
             
@@ -5581,7 +5578,7 @@ def user_plans_api(request, plan_id=None, action=None):
             progress = user_plan.get_progress_summary()
             
             # Include plan details
-            plan = PlanSet().get_plan_by_id(plan_id)
+            plan = PlanSet().get_plan_by_id(user_plan.plan_id)
             plan_details = {"title": plan.title, "description": plan.description} if plan else {}
             
             result = {
@@ -5597,7 +5594,7 @@ def user_plans_api(request, plan_id=None, action=None):
                 "plan_details": plan_details
             }
             
-            return jsonResponse(result, callback=cb)
+            return jsonResponse({"plans": result}, callback=cb)
         else:
             # Get all active plans for the user
             active_plans = UserPlanSet().get_active_plans_for_user(user_id)
