@@ -280,21 +280,23 @@ const EditPlanModal = ({ plan, onClose, onSave }) => {
           {showSheetMapping && (
             <div className="sheet-mapping-section">
               {sheetInputs.map((input, index) => (
-                <div key={index} className="sheet-mapping-row">
-                  <div className="form-group">
+                <div key={index} className="sheet-input-container">
+                  <div className="sheet-input-field-wrapper">
                     <label>Sheet URL:</label>
                     <input
                       type="text"
                       value={input.link}
                       onChange={(e) => handleSheetLinkChange(index, e.target.value)}
                       placeholder="Enter sheet URL"
+                      className="sheet-input-field"
                     />
                   </div>
-                  <div className="form-group">
+                  <div className="day-select-wrapper">
                     <label>Assign to Day:</label>
                     <select
                       value={input.day}
                       onChange={(e) => handleDaySelect(index, e.target.value)}
+                      className="day-select"
                     >
                       <option value="">Select a day</option>
                       {getAvailableDays(index).map(day => (
@@ -444,7 +446,8 @@ class UserProfile extends Component {
             <InterfaceText>{this.props.profile.full_name}</InterfaceText>
             <InterfaceText> collection.no_shared_collection</InterfaceText>
           </div>
-        </div>);
+        </div>
+      );
     }
     return (
       <div className="emptyList">
@@ -453,9 +456,10 @@ class UserProfile extends Component {
         </div>
         <a href="/collections/new" className="resourcesLink sans-serif">
           <img src="/static/icons/collection.svg" alt="Collection icon" />
-            <InterfaceText>common.collection.btn.create_new_collection</InterfaceText>
+          <InterfaceText>common.collection.btn.create_new_collection</InterfaceText>
         </a>
-      </div>);
+      </div>
+    );
   }
 
   renderCollection(collection) {
@@ -470,7 +474,7 @@ class UserProfile extends Component {
       <div className="sheet-header">
         <a href="/collections/new" className="resourcesLink sans-serif">
           <img src="/static/icons/collection.svg" alt="Collection icon" />
-            <InterfaceText>common.collection.btn.create_new_collection</InterfaceText>
+          <InterfaceText>common.collection.btn.create_new_collection</InterfaceText>
         </a>
       </div>
     );
