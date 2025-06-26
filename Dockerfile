@@ -46,8 +46,8 @@ COPY . ./
 
 RUN python manage.py collectstatic --noinput
 
-# Run Django migrations and start both the main app and reminder script
-CMD ["bash", "-c", "python send_daily_reminders.py & python manage.py migrate && python manage.py runserver 0.0.0.0:8000"]
+# Run Django migrations and start both the main app
+CMD ["bash", "-c", "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"]
 
 # Expose the port for the Django application
 EXPOSE 8000
