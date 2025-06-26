@@ -137,10 +137,23 @@ class PlanView(View):
             if 'category' in request.GET:
                 query['categories'] = request.GET['category']
             
+            # Get pagination parameters
+            page = request.GET.get('page')
+            page_size = request.GET.get('page_size', 20)  # Default to 20 items per page
+            
             plans = PlanSet(query)
-            return jsonResponse({
-                "plans": plans.contents()
-            })
+            
+            # Get plans with pagination if requested
+            if page:
+                plans_data = plans.contents(page=page, page_size=page_size)
+                return jsonResponse({
+                    "plans": plans_data["results"],
+                    "pagination": plans_data["pagination"]
+                })
+            else:
+                return jsonResponse({
+                    "plans": plans.contents()
+                })
 
         except Exception as e:
             logger.error(f"Error in get: {str(e)}")

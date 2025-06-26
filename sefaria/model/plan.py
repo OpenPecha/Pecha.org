@@ -175,18 +175,45 @@ class PlanSet:
     def __init__(self, query=None):
         self.query = query or {}
         
-    def contents(self):
+    def contents(self, page=None, page_size=None):
         plans = []
-        plan_response = db['plans'].find(self.query)
-        if plan_response:
-            for obj in plan_response:
+        query = db['plans'].find(self.query)
+        
+        # Get total count for pagination metadata
+        total_count = db['plans'].count_documents(self.query)
+        
+        # Apply pagination if requested
+        if page is not None and page_size is not None:
+            page = int(page)
+            page_size = int(page_size)
+            skip = (page - 1) * page_size
+            query = query.skip(skip).limit(page_size)
+        
+        if query:
+            for obj in query:
                 # Convert ObjectId to string before creating Plan object
                 if '_id' in obj:
                     obj['id'] = str(obj['_id'])
                     del obj['_id']
-                print("data>>>>>>>>>>>>>>", obj)
                 plan = Plan(obj)
                 plans.append(plan.contents())
+        
+        # If pagination is used, return with pagination metadata
+        if page is not None and page_size is not None:
+            total_pages = (total_count + page_size - 1) // page_size  # Ceiling division
+            return {
+                "results": plans,
+                "pagination": {
+                    "page": page,
+                    "page_size": page_size,
+                    "total_count": total_count,
+                    "total_pages": total_pages,
+                    "has_next": page < total_pages,
+                    "has_previous": page > 1
+                }
+            }
+        
+        # If no pagination, just return the plans
         return plans
 
     @classmethod

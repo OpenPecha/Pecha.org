@@ -29,7 +29,9 @@ const PlanDetail = ({ planId, user_id }) => {
   }, [planId]);
 
   if (loading) {
-    return <div className="loading">Loading plan details...</div>;
+    return (<div className="loading" style={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', width: '100%'}}>
+                  <InterfaceText>common.loading</InterfaceText>
+                </div>);
   }
 
   if (error) {
