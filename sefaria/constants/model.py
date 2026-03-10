@@ -11,7 +11,6 @@ ALLOWED_ATTRS_IN_ABSTRACT_TEXT_RECORD = {
     'a': ['dir', 'class', 'href', 'data-ref', "data-ven", "data-vhe", 'data-scroll-link'],
 }
 
-
 LANGUAGE_CODES = {
     #maps ISO language codes to their nother language (i.e. jrb to Arabic rather than Judeo-Arabic)
     "ar": "arabic",
